@@ -200,8 +200,13 @@
     let streams = {};
     let shelfCount = 0;
 
+    // ✅ entry_time / exit_time باید ISO باشند تا ستون timestamp خطا ندهد
     let entryTime = null;
     let exitTime = null;
+
+    // ✅ دو ستون جدید تکست در Supabase (همان املای persain)
+    let entryPersianDate = null;
+    let exitPersianDate = null;
 
     let entryLat = null, entryLon = null, entryAddress = "";
     let exitLat = null, exitLon = null, exitAddress = "";
@@ -426,6 +431,7 @@
       else if (type === "exit") typeLabel = "خروج";
       else if (type.startsWith("shelf_")) typeLabel = "شلف";
 
+      // واترمارک با تاریخ شمسی
       drawWatermark(canvas, [
         `${typeLabel}: ${staff} | ${getPersianNow()} | کد:${code}`,
         loc.text
@@ -454,15 +460,23 @@
         status.textContent = "عکس با موفقیت ثبت شد.";
 
         if (type === "entry") {
-          entryTime = getPersianNow();
+          // ✅ ISO برای timestamp + شمسی برای ستون text
+          entryTime = new Date().toISOString();
+          entryPersianDate = getPersianNow();
+
           entryLat = loc.lat;
           entryLon = loc.lon;
           entryAddress = loc.address;
+
         } else if (type === "exit") {
-          exitTime = getPersianNow();
+          // ✅ ISO برای timestamp + شمسی برای ستون text
+          exitTime = new Date().toISOString();
+          exitPersianDate = getPersianNow();
+
           exitLat = loc.lat;
           exitLon = loc.lon;
           exitAddress = loc.address;
+
         } else if (type.startsWith("shelf_")) {
           shelfMeta[type] = {
             time: getPersianNow(),
@@ -508,14 +522,20 @@
 
       if (type === "entry") {
         entryTime = null;
+        entryPersianDate = null;
+
         entryLat = null;
         entryLon = null;
         entryAddress = "";
+
       } else if (type === "exit") {
         exitTime = null;
+        exitPersianDate = null;
+
         exitLat = null;
         exitLon = null;
         exitAddress = "";
+
       } else if (type.startsWith("shelf_")) {
         delete shelfMeta[type];
       }
@@ -632,13 +652,19 @@
           entry_photo_url: entryUrl,
           exit_photo_url: exitUrl,
 
+          // ✅ timestamp/timestamptz
           entry_time: entryTime,
           exit_time: exitTime,
+
+          // ✅ ستون‌های text جدید شما
+          entry_persain_date: entryPersianDate,
+          exit_persain_date: exitPersianDate,
 
           latitude: exitLat,
           longitude: exitLon,
           location_text: exitAddress,
 
+          shelf_photos: shelfRecords
         };
 
         const { error } = await supabaseClient
