@@ -137,7 +137,7 @@
 
       <div class="field">
         <label>۲) کد فروشگاه</label>
-        <input type="number" id="shop_code" required />
+        <input type="number" id="customer_code" required />
       </div>
 
       <div class="field">
@@ -395,7 +395,7 @@
 
     async function takePhoto(type) {
       const staff = document.getElementById("staff_name").value;
-      const code = document.getElementById("shop_code").value;
+      const code = document.getElementById("customer_code").value;
 
       if (!staff || !code) {
         alert("ابتدا نام نیرو و کد فروشگاه را وارد کنید.");
@@ -583,13 +583,13 @@
 
       const btn = document.getElementById("submitBtn");
       const supervisor = document.getElementById("supervisor").value;
-      const shopCode = document.getElementById("shop_code").value;
+      const customer_code = document.getElementById("customer_code").value;
       const staffName = document.getElementById("staff_name").value;
 
       const entryFile = document.getElementById("f_entry").files[0];
       const exitFile = document.getElementById("f_exit").files[0];
 
-      if (!supervisor || !shopCode || !staffName) {
+      if (!supervisor || !customer_code || !staffName) {
         alert("لطفاً تمام فیلدهای اصلی را تکمیل کنید.");
         return;
       }
@@ -626,7 +626,7 @@
 
         const payload = {
           supervisor: supervisor,
-          shop_code: shopCode,
+          customer_code: customercode,
           staff_name: staffName,
 
           entry_photo_url: entryUrl,
@@ -638,7 +638,8 @@
           latitude: exitLat,
           longitude: exitLon,
           location_text: exitAddress,
-        };
+
+          };
 
         const { error } = await supabaseClient
           .from("daily_reports")
