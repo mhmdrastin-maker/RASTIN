@@ -4,48 +4,152 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>فرم ثبت سرکشی سرپرستان مویرگی</title>
+
   <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     * { box-sizing: border-box; font-family: Vazirmatn, sans-serif; }
-    body { margin: 0; padding: 16px; background: #f1f5f9; color: #0f172a; }
-    .card { max-width: 720px; margin: 0 auto; background: #fff; border-radius: 18px; padding: 20px; box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08); }
-    h2 { margin: 0 0 20px; text-align: center; font-size: 22px; color: #1e293b; }
+    body {
+      margin: 0;
+      padding: 16px;
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    .card {
+      max-width: 780px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    }
+    h2 {
+      margin: 0 0 20px;
+      text-align: center;
+      font-size: 22px;
+      color: #1e293b;
+    }
     .field { margin-bottom: 18px; }
-    label { display: block; margin-bottom: 8px; font-weight: 700; color: #334155; font-size: 14px; }
-    input, select { width: 100%; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 12px 14px; font-size: 14px; }
-    .camera-box { border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 12px; background: #f8fafc; text-align: center; margin-bottom: 10px; }
-    video, img { width: 100%; border-radius: 12px; background: #000; display: block; }
-    canvas { display: none; } /* کانواس مخفی برای پردازش واترمارک */
-    .photo-preview { display: none; margin-top: 10px; border: 2px solid #10b981; }
-    .camera-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
-    button { border: none; border-radius: 12px; padding: 12px; cursor: pointer; font-weight: 700; }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 700;
+      color: #334155;
+      font-size: 14px;
+    }
+    input, select {
+      width: 100%;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 14px;
+      background: #fff;
+    }
+    .camera-box {
+      border: 1.5px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 12px;
+      background: #f8fafc;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    video, img {
+      width: 100%;
+      border-radius: 12px;
+      background: #000;
+      display: block;
+    }
+    canvas { display: none; }
+    .photo-preview {
+      display: none;
+      margin-top: 10px;
+      border: 2px solid #10b981;
+    }
+    .camera-actions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 12px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+    }
     .primary-btn { background: #2563eb; color: #fff; }
     .secondary-btn { background: #e2e8f0; color: #334155; }
     .danger-btn { background: #fee2e2; color: #ef4444; }
-    .submit-btn { width: 100%; background: #10b981; color: #fff; font-size: 16px; min-height: 52px; margin-top: 10px; }
-    .status { margin-top: 8px; font-size: 13px; text-align: center; color: #64748b; }
-    .add-shelf-btn { width: 100%; background: #f1f5f9; color: #0f172a; border: 1.5px dashed #94a3b8; margin-top: 8px; }
+    .submit-btn {
+      width: 100%;
+      background: #10b981;
+      color: #fff;
+      font-size: 16px;
+      min-height: 52px;
+      margin-top: 10px;
+    }
+    .submit-btn:disabled { background: #94a3b8; }
+    .status {
+      margin-top: 8px;
+      font-size: 13px;
+      text-align: center;
+      color: #64748b;
+      line-height: 1.8;
+    }
+    .add-shelf-btn {
+      width: 100%;
+      background: #f1f5f9;
+      color: #0f172a;
+      border: 1.5px dashed #94a3b8;
+      margin-top: 8px;
+    }
+    .remove-shelf-btn {
+      width: 100%;
+      margin-top: 8px;
+      background: #fff1f2;
+      color: #e11d48;
+      border: 1px solid #fecdd3;
+    }
   </style>
 </head>
 <body>
   <div class="card">
-    <h2>فرم ثبت سرکشی</h2>
+    <h2>فرم ثبت سرکشی سرپرستان مویرگی</h2>
+
     <form id="mainForm">
       <div class="field">
         <label>۱) نام سرپرست</label>
-        <select id="supervisor" required><option value="">انتخاب کنید...</option>
-          <option value="دنیا کرمی">دنیا کرمی</option><option value="مائده بهشتی">مائده بهشتی</option>
-          <option value="محمد شیرمحمدیان">محمد شیرمحمدیان</option><option value="محمد رضایی زنده دل">محمد رضایی زنده دل</option>
-          <option value="مهسا کلیدری">مهسا کلیدری</option><option value="ندا دهزاده">ندا دهزاده</option>
-          <option value="نگار شهمراد">نگار شهمراد</option><option value="علی معصوم نژاد">علی معصوم نژاد</option>
+        <select id="supervisor" required>
+          <option value="">انتخاب کنید...</option>
+          <option value="دنیا کرمی">دنیا کرمی</option>
+          <option value="مائده بهشتی">مائده بهشتی</option>
+          <option value="محمد شیرمحمدیان">محمد شیرمحمدیان</option>
+          <option value="محمد رضایی زنده دل">محمد رضایی زنده دل</option>
+          <option value="مهسا کلیدری">مهسا کلیدری</option>
+          <option value="ندا دهزاده">ندا دهزاده</option>
+          <option value="نگار شهمراد">نگار شهمراد</option>
+          <option value="علی معصوم نژاد">علی معصوم نژاد</option>
         </select>
       </div>
-      <div class="field"><label>۲) کد فروشگاه</label><input type="number" id="shop_code" required></div>
-      <div class="field"><label>۳) نام نیرو</label><select id="staff_name" required disabled><option value="">ابتدا سرپرست را انتخاب کنید</option></select></div>
-      
+
+      <div class="field">
+        <label>۲) کد فروشگاه</label>
+        <input type="number" id="shop_code" required />
+      </div>
+
+      <div class="field">
+        <label>۳) نام نیرو</label>
+        <select id="staff_name" required disabled>
+          <option value="">ابتدا سرپرست را انتخاب کنید</option>
+        </select>
+      </div>
+
       <!-- عکس ورود -->
-      <div class="field"><label>۴) عکس ورود</label>
+      <div class="field">
+        <label>۴) عکس ورود</label>
         <div class="camera-box">
           <video id="v_entry" autoplay playsinline muted></video>
           <canvas id="c_entry"></canvas>
@@ -56,14 +160,20 @@
             <button type="button" id="r_entry" class="danger-btn" onclick="resetCameraBox('entry')" disabled>حذف</button>
           </div>
           <div id="s_entry" class="status">دوربین خاموش</div>
-          <input type="file" id="f_entry" hidden required />
+          <input type="file" id="f_entry" hidden />
         </div>
       </div>
 
-      <div class="field"><label>۵) عکس شلف</label><div id="shelfContainer"></div><button type="button" class="add-shelf-btn" onclick="addShelfBox()">+ افزودن شلف</button></div>
+      <!-- شلف -->
+      <div class="field">
+        <label>۵) عکس شلف</label>
+        <div id="shelfContainer"></div>
+        <button type="button" class="add-shelf-btn" onclick="addShelfBox()">+ افزودن شلف</button>
+      </div>
 
       <!-- عکس خروج -->
-      <div class="field"><label>۶) عکس خروج</label>
+      <div class="field">
+        <label>۶) عکس خروج</label>
         <div class="camera-box">
           <video id="v_exit" autoplay playsinline muted></video>
           <canvas id="c_exit"></canvas>
@@ -74,57 +184,139 @@
             <button type="button" id="r_exit" class="danger-btn" onclick="resetCameraBox('exit')" disabled>حذف</button>
           </div>
           <div id="s_exit" class="status">دوربین خاموش</div>
-          <input type="file" id="f_exit" hidden required />
+          <input type="file" id="f_exit" hidden />
         </div>
       </div>
-      <button type="submit" id="submitBtn" class="submit-btn">ثبت نهایی در دیتابیس</button>
+
+      <button type="submit" id="submitBtn" class="submit-btn">ثبت نهایی</button>
     </form>
   </div>
 
   <script>
     const SUPABASE_URL = "https://jlvffhlfsshbdcxrcvjl.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsdmZmaGxmc3NoYmRjeHJjdmpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3NjM4NzUsImV4cCI6MjA5OTMzOTg3NX0.vbuRXTBcdUMLOTZ9p-aCTO30fbPbAYclzPe0oVmeeog"; 
+    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-    let exitLat = null, exitLon = null, exitAddress = "", entryTime = null, exitTime = null;
+
+    let streams = {};
+    let shelfCount = 0;
+
+    let entryTime = null;
+    let exitTime = null;
+
+    let entryLat = null, entryLon = null, entryAddress = "";
+    let exitLat = null, exitLon = null, exitAddress = "";
+
+    const shelfMeta = {};
 
     const staffData = {
-        "دنیا کرمی": ["الهام فاضلی", "امیر فرجی", "امیرحسین سلطان پناه", "رقیه عبدلرضائی زاده", "زینب فاضل زاده", "لیلا خانمحمدلو", "مریم سلیمانی", "مریم ترنیان"],
-        "مائده بهشتی": ["رویا حاجیوند", "زهرا خلخالی", "شهلا جوانمردنیا", "ظریفه رائی", "فاطمه الله وردی", "معصومه شورابی", "معصومه مرادی"],
-        "محمد شیرمحمدیان": ["امیر عبدی", "سوده سروقدی", "محمد غیبی", "مریم هفتانی"],
-        "محمد رضایی زنده دل": ["فاطمه عزیزی", "فاطمه نوری", "فائزه رهنما دلچه", "مائده شعبان زاده", "مریم رستمی کرکرق", "نعیمه فرشاد"],
-        "مهسا کلیدری": ["الهام اسدپور", "الهام عسکری", "بهاره اولیایی", "ثریا دهقانی", "حمیده صدیقی", "خدیجه تیموری", "زینب دهقانی", "سمیه ارغوانی", "سهیلا توسلی", "فاطمه رمضانی", "فاطمه غفوریان", "کعبه صفری پور", "ملیحه عباسی", "هانیه رحیمی"],
-        "ندا دهزاده": ["زهرا خاکزاد", "سارا مهدی زاده", "سحر جعفری", "سمانه احمدی", "فاطمه اندراجمی ساداتی", "مرجان کونوشیان", "مریم سادات حسینی", "مهدیه قاسمی", "مهسا فیض آبادی", "مینا امیری"],
-        "نگار شهمراد": ["پریسا بهمنش راد", "حدیثه حاتمی", "رها حاجیانی", "زهرا صفدری", "زهرا یسلیانی", "عاطفه دریس", "مریم محمدی", "مهسا امامی", "یلدا آورند"],
-        "علی معصوم نژاد": ["پریسا بهمنش راد", "حدیثه حاتمی", "رها حاجیانی", "زهرا صفدری", "زهرا یسلیانی", "عاطفه دریس", "مریم محمدی", "مهسا امامی", "یلدا آورند"]
+      "دنیا کرمی": ["الهام فاضلی", "امیر فرجی", "امیرحسین سلطان پناه", "رقیه عبدلرضائی زاده", "زینب فاضل زاده", "لیلا خانمحمدلو", "مریم سلیمانی", "مریم ترنیان"],
+      "مائده بهشتی": ["رویا حاجیوند", "زهرا خلخالی", "شهلا جوانمردنیا", "ظریفه رائی", "فاطمه الله وردی", "معصومه شورابی", "معصومه مرادی"],
+      "محمد شیرمحمدیان": ["امیر عبدی", "سوده سروقدی", "محمد غیبی", "مریم هفتانی"],
+      "محمد رضایی زنده دل": ["فاطمه عزیزی", "فاطمه نوری", "فائزه رهنما دلچه", "مائده شعبان زاده", "مریم رستمی کرکرق", "نعیمه فرشاد"],
+      "مهسا کلیدری": ["الهام اسدپور", "الهام عسکری", "بهاره اولیایی", "ثریا دهقانی", "حمیده صدیقی", "خدیجه تیموری", "زینب دهقانی", "سمیه ارغوانی", "سهیلا توسلی", "فاطمه رمضانی", "فاطمه غفوریان", "کعبه صفری پور", "ملیحه عباسی", "هانیه رحیمی"],
+      "ندا دهزاده": ["زهرا خاکزاد", "سارا مهدی زاده", "سحر جعفری", "سمانه احمدی", "فاطمه اندراجمی ساداتی", "مرجان کونوشیان", "مریم سادات حسینی", "مهدیه قاسمی", "مهسا فیض آبادی", "مینا امیری"],
+      "نگار شهمراد": ["پریسا بهمنش راد", "حدیثه حاتمی", "رها حاجیانی", "زهرا صفدری", "زهرا یسلیانی", "عاطفه دریس", "مریم محمدی", "مهسا امامی", "یلدا آورند"],
+      "علی معصوم نژاد": ["پریسا بهمنش راد", "حدیثه حاتمی", "رها حاجیانی", "زهرا صفدری", "زهرا یسلیانی", "عاطفه دریس", "مریم محمدی", "مهسا امامی", "یلدا آورند"]
     };
 
-    // --- توابع کمکی واترمارک (دقیقا مطابق کدی که دادی) ---
     function getPersianNow() {
       const now = new Date();
-      const date = new Intl.DateTimeFormat("fa-IR-u-ca-persian-nu-latn", {year: "numeric", month: "2-digit", day: "2-digit"}).format(now);
-      const time = new Intl.DateTimeFormat("fa-IR-u-nu-latn", {hour: "2-digit", minute: "2-digit", hour12: false}).format(now);
+      const date = new Intl.DateTimeFormat("fa-IR-u-ca-persian-nu-latn", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).format(now);
+
+      const time = new Intl.DateTimeFormat("fa-IR-u-nu-latn", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+      }).format(now);
+
       return `${time} | ${date}`;
     }
 
     async function getLocationFull() {
       try {
-        const pos = await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, {timeout: 10000}));
+        const pos = await new Promise((resolve, reject) =>
+          navigator.geolocation.getCurrentPosition(
+            resolve,
+            reject,
+            { timeout: 10000, enableHighAccuracy: true }
+          )
+        );
+
         const lat = pos.coords.latitude;
         const lon = pos.coords.longitude;
         const gps = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
-        
-        // ذخیره برای دیتابیس
-        exitLat = lat; exitLon = lon;
 
+        let address = "";
         try {
           const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=fa`);
           const data = await resp.json();
-          const addr = data.display_name || "";
-          exitAddress = addr;
-          return addr ? `${addr} | ${gps}` : gps;
-        } catch { return gps; }
-      } catch { return "موقعیت یافت نشد"; }
+          address = data.display_name || "";
+        } catch (e) {}
+
+        return {
+          lat,
+          lon,
+          address,
+          text: address ? `${address} | ${gps}` : gps
+        };
+      } catch (e) {
+        return {
+          lat: null,
+          lon: null,
+          address: "",
+          text: "موقعیت یافت نشد"
+        };
+      }
+    }
+
+    function wrapTextToTwoLines(ctx, text, maxWidth) {
+      if (ctx.measureText(text).width <= maxWidth) return [text];
+
+      const parts = text.split(" | ");
+      if (parts.length >= 2) {
+        const lastPart = parts.pop();
+        const firstLine = parts.join(" | ");
+        const secondLine = lastPart;
+
+        if (ctx.measureText(firstLine).width <= maxWidth && ctx.measureText(secondLine).width <= maxWidth) {
+          return [firstLine, secondLine];
+        }
+      }
+
+      const words = text.split(" ");
+      let line1 = "";
+      let line2 = "";
+
+      for (let i = 0; i < words.length; i++) {
+        const test = line1 ? `${line1} ${words[i]}` : words[i];
+        if (ctx.measureText(test).width <= maxWidth) {
+          line1 = test;
+        } else {
+          line2 = words.slice(i).join(" ");
+          break;
+        }
+      }
+
+      if (!line2) return [line1];
+
+      while (ctx.measureText(line2).width > maxWidth) {
+        const line2Words = line2.split(" ");
+        if (line2Words.length <= 1) break;
+        line1 = `${line1} ${line2Words.shift()}`;
+        line2 = line2Words.join(" ");
+        if (ctx.measureText(line1).width > maxWidth) {
+          const l1Words = line1.split(" ");
+          line2 = `${l1Words.pop()} ${line2}`.trim();
+          line1 = l1Words.join(" ");
+          break;
+        }
+      }
+
+      return [line1.trim(), line2.trim()];
     }
 
     function drawWatermark(canvas, lines) {
@@ -132,112 +324,358 @@
       const fontSize = Math.max(12, Math.round(canvas.width * 0.014));
       const lineGap = Math.round(fontSize * 0.3);
       const padding = Math.round(fontSize * 0.45);
+      const maxTextWidth = canvas.width * 0.78;
 
       ctx.save();
       ctx.font = `bold ${fontSize}px Tahoma, Arial, sans-serif`;
-      ctx.direction = "rtl"; ctx.textAlign = "right"; ctx.textBaseline = "top";
+      ctx.direction = "rtl";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "top";
 
-      const maxWidth = Math.max(...lines.map(l => ctx.measureText(l).width));
+      let processedLines = [];
+      lines.forEach((line, index) => {
+        if (index === 1 && ctx.measureText(line).width > maxTextWidth) {
+          processedLines.push(...wrapTextToTwoLines(ctx, line, maxTextWidth));
+        } else {
+          processedLines.push(line);
+        }
+      });
+
+      const maxWidth = Math.max(...processedLines.map(line => ctx.measureText(line).width));
       const rectWidth = maxWidth + (padding * 2);
-      const rectHeight = (fontSize * lines.length) + (lineGap * (lines.length - 1)) + (padding * 2);
-      
+      const rectHeight = (fontSize * processedLines.length) + (lineGap * (processedLines.length - 1)) + (padding * 2);
+
+      const x = canvas.width - 20 - rectWidth;
+      const y = canvas.height - 20 - rectHeight;
+
       ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-      ctx.fillRect(canvas.width - 20 - rectWidth, canvas.height - 20 - rectHeight, rectWidth, rectHeight);
+      ctx.fillRect(x, y, rectWidth, rectHeight);
 
       ctx.fillStyle = "#ffffff";
-      lines.forEach((line, i) => {
-        ctx.fillText(line, canvas.width - 20 - padding, canvas.height - 20 - rectHeight + padding + i * (fontSize + lineGap));
+      processedLines.forEach((line, i) => {
+        ctx.fillText(line, canvas.width - 20 - padding, y + padding + i * (fontSize + lineGap));
       });
+
       ctx.restore();
     }
 
-    // --- منطق دوربین و ثبت ---
+    function stopCam(type) {
+      if (streams[type]) {
+        streams[type].getTracks().forEach(track => track.stop());
+        streams[type] = null;
+      }
+    }
+
+    async function startCam(type) {
+      try {
+        stopCam(type);
+
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+          audio: false
+        });
+
+        streams[type] = stream;
+
+        const v = document.getElementById(`v_${type}`);
+        const p = document.getElementById(`p_${type}`);
+
+        v.srcObject = stream;
+        v.style.display = "block";
+        p.style.display = "none";
+
+        document.getElementById(`t_${type}`).disabled = false;
+        document.getElementById(`r_${type}`).disabled = true;
+        document.getElementById(`s_${type}`).textContent = "دوربین فعال است";
+      } catch (err) {
+        document.getElementById(`s_${type}`).textContent = "عدم دسترسی به دوربین";
+        alert("دسترسی به دوربین ممکن نشد.");
+      }
+    }
+
     async function takePhoto(type) {
       const staff = document.getElementById("staff_name").value;
       const code = document.getElementById("shop_code").value;
-      if(!staff || !code) return alert("ابتدا نام نیرو و کد فروشگاه را وارد کنید.");
+
+      if (!staff || !code) {
+        alert("ابتدا نام نیرو و کد فروشگاه را وارد کنید.");
+        return;
+      }
 
       const video = document.getElementById(`v_${type}`);
       const canvas = document.getElementById(`c_${type}`);
+      const status = document.getElementById(`s_${type}`);
+
+      if (!video.srcObject) {
+        alert("ابتدا دوربین را فعال کنید.");
+        return;
+      }
+
+      status.textContent = "در حال دریافت لوکیشن و ثبت عکس...";
+
+      const loc = await getLocationFull();
+
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
+
       const ctx = canvas.getContext("2d");
-      ctx.drawImage(video, 0, 0);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      document.getElementById(`s_${type}`).textContent = "در حال پردازش واترمارک و GPS...";
-      
-      const locText = (type === 'exit') ? await getLocationFull() : "لوکیشن ثبت نشد";
-      const typeLabel = (type === 'entry') ? "ورود" : "خروج";
-      const lines = [
-        `عکس ${typeLabel}: ${staff} | ${getPersianNow()} | کد:${code}`,
-        locText
-      ];
+      let typeLabel = "عکس";
+      if (type === "entry") typeLabel = "ورود";
+      else if (type === "exit") typeLabel = "خروج";
+      else if (type.startsWith("shelf_")) typeLabel = "شلف";
 
-      drawWatermark(canvas, lines);
+      drawWatermark(canvas, [
+        `${typeLabel}: ${staff} | ${getPersianNow()} | کد:${code}`,
+        loc.text
+      ]);
 
       canvas.toBlob(blob => {
         const file = new File([blob], `${type}.jpg`, { type: "image/jpeg" });
-        const dt = new DataTransfer(); dt.items.add(file);
-        document.getElementById(`f_${type}`).files = dt.files;
-        
-        document.getElementById(`p_${type}`).src = URL.createObjectURL(blob);
-        document.getElementById(`p_${type}`).style.display = "block";
+        const dt = new DataTransfer();
+        dt.items.add(file);
+
+        const fileInput = document.getElementById(`f_${type}`);
+        const preview = document.getElementById(`p_${type}`);
+
+        fileInput.files = dt.files;
+
+        if (preview.src) {
+          try { URL.revokeObjectURL(preview.src); } catch (e) {}
+        }
+
+        preview.src = URL.createObjectURL(blob);
+        preview.style.display = "block";
         video.style.display = "none";
+
         document.getElementById(`t_${type}`).disabled = true;
         document.getElementById(`r_${type}`).disabled = false;
-        document.getElementById(`s_${type}`).textContent = "عکس با واترمارک ثبت شد.";
-        
-        if(type === 'entry') entryTime = new Date().toISOString();
-        if(type === 'exit') exitTime = new Date().toISOString();
+        status.textContent = "عکس با موفقیت ثبت شد.";
+
+        if (type === "entry") {
+          entryTime = new Date().toISOString();
+          entryLat = loc.lat;
+          entryLon = loc.lon;
+          entryAddress = loc.address;
+        } else if (type === "exit") {
+          exitTime = new Date().toISOString();
+          exitLat = loc.lat;
+          exitLon = loc.lon;
+          exitAddress = loc.address;
+        } else if (type.startsWith("shelf_")) {
+          shelfMeta[type] = {
+            time: new Date().toISOString(),
+            lat: loc.lat,
+            lon: loc.lon,
+            address: loc.address
+          };
+        }
+
+        stopCam(type);
       }, "image/jpeg", 0.9);
     }
 
-    // --- ثبت نهایی در Supabase ---
-    document.getElementById("mainForm").addEventListener("submit", async e => {
+    function resetCameraBox(type) {
+      stopCam(type);
+
+      const fileInput = document.getElementById(`f_${type}`);
+      const preview = document.getElementById(`p_${type}`);
+      const video = document.getElementById(`v_${type}`);
+      const status = document.getElementById(`s_${type}`);
+
+      if (fileInput) fileInput.value = "";
+
+      if (preview) {
+        if (preview.src) {
+          try { URL.revokeObjectURL(preview.src); } catch (e) {}
+        }
+        preview.src = "";
+        preview.style.display = "none";
+      }
+
+      if (video) {
+        video.srcObject = null;
+        video.style.display = "block";
+      }
+
+      const takeBtn = document.getElementById(`t_${type}`);
+      const removeBtn = document.getElementById(`r_${type}`);
+
+      if (takeBtn) takeBtn.disabled = true;
+      if (removeBtn) removeBtn.disabled = true;
+      if (status) status.textContent = "عکس حذف شد و دوربین خاموش است.";
+
+      if (type === "entry") {
+        entryTime = null;
+        entryLat = null;
+        entryLon = null;
+        entryAddress = "";
+      } else if (type === "exit") {
+        exitTime = null;
+        exitLat = null;
+        exitLon = null;
+        exitAddress = "";
+      } else if (type.startsWith("shelf_")) {
+        delete shelfMeta[type];
+      }
+    }
+
+    function removeShelfBox(type) {
+      stopCam(type);
+
+      const box = document.getElementById(`box_${type}`);
+      const preview = document.getElementById(`p_${type}`);
+
+      if (preview && preview.src) {
+        try { URL.revokeObjectURL(preview.src); } catch (e) {}
+      }
+
+      delete shelfMeta[type];
+
+      if (box) box.remove();
+    }
+
+    function addShelfBox() {
+      shelfCount++;
+      const type = `shelf_${shelfCount}`;
+
+      const box = document.createElement("div");
+      box.className = "camera-box";
+      box.id = `box_${type}`;
+
+      box.innerHTML = `
+        <div style="font-weight:700; margin-bottom:8px;">شلف ${shelfCount}</div>
+        <video id="v_${type}" autoplay playsinline muted></video>
+        <canvas id="c_${type}"></canvas>
+        <img id="p_${type}" class="photo-preview" />
+        <div class="camera-actions">
+          <button type="button" class="primary-btn" onclick="startCam('${type}')">دوربین</button>
+          <button type="button" id="t_${type}" class="secondary-btn" onclick="takePhoto('${type}')" disabled>ثبت</button>
+          <button type="button" id="r_${type}" class="danger-btn" onclick="resetCameraBox('${type}')" disabled>حذف</button>
+        </div>
+        <div id="s_${type}" class="status">دوربین خاموش</div>
+        <input type="file" id="f_${type}" hidden />
+        <button type="button" class="remove-shelf-btn" onclick="removeShelfBox('${type}')">حذف کامل این شلف</button>
+      `;
+
+      document.getElementById("shelfContainer").appendChild(box);
+    }
+
+    async function uploadFile(file, folder) {
+      const safeName = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.jpg`;
+
+      const { error } = await supabaseClient.storage
+        .from("Raptor")
+        .upload(safeName, file);
+
+      if (error) throw error;
+
+      const { data } = supabaseClient.storage
+        .from("Raptor")
+        .getPublicUrl(safeName);
+
+      return data.publicUrl;
+    }
+
+    document.getElementById("mainForm").addEventListener("submit", async function(e) {
       e.preventDefault();
+
       const btn = document.getElementById("submitBtn");
-      btn.disabled = true; btn.textContent = "در حال ارسال به Supabase...";
+      const supervisor = document.getElementById("supervisor").value;
+      const shopCode = document.getElementById("shop_code").value;
+      const staffName = document.getElementById("staff_name").value;
+
+      const entryFile = document.getElementById("f_entry").files[0];
+      const exitFile = document.getElementById("f_exit").files[0];
+
+      if (!supervisor || !shopCode || !staffName) {
+        alert("لطفاً تمام فیلدهای اصلی را تکمیل کنید.");
+        return;
+      }
+
+      if (!entryFile || !exitFile) {
+        alert("لطفاً عکس ورود و عکس خروج را ثبت کنید.");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "در حال ارسال به Supabase...";
 
       try {
-        const upload = async (file, folder) => {
-          const path = `${folder}/${Date.now()}.jpg`;
-          await supabaseClient.storage.from("Raptor").upload(path, file);
-          return supabaseClient.storage.from("Raptor").getPublicUrl(path).data.publicUrl;
-        };
+        const entryUrl = await uploadFile(entryFile, "entry");
+        const exitUrl = await uploadFile(exitFile, "exit");
 
-        const entryUrl = await upload(document.getElementById("f_entry").files[0], "entry");
-        const exitUrl = await upload(document.getElementById("f_exit").files[0], "exit");
+        const shelfRecords = [];
+        const shelfTypes = Object.keys(shelfMeta);
 
-        await supabaseClient.from("daily_reports").insert([{
-          supervisor: document.getElementById("supervisor").value,
-          shop_code: document.getElementById("shop_code").value,
-          staff_name: document.getElementById("staff_name").value,
+        for (const type of shelfTypes) {
+          const file = document.getElementById(`f_${type}`)?.files[0];
+          if (!file) continue;
+
+          const url = await uploadFile(file, "shelf");
+
+          shelfRecords.push({
+            url,
+            time: shelfMeta[type].time || null,
+            lat: shelfMeta[type].lat || null,
+            lon: shelfMeta[type].lon || null,
+            address: shelfMeta[type].address || ""
+          });
+        }
+
+        const payload = {
+          supervisor: supervisor,
+          shop_code: shopCode,
+          staff_name: staffName,
+
           entry_photo_url: entryUrl,
           exit_photo_url: exitUrl,
-          latitude: exitLat,
-          longitude: exitLon,
-          location_text: exitAddress,
-          entry_time: entryTime,
-          exit_time: exitTime
-        }]);
 
-        alert("اطلاعات با موفقیت در دیتابیس ثبت شد.");
+          entry_time: entryTime,
+          exit_time: exitTime,
+
+          entry_latitude: entryLat,
+          entry_longitude: entryLon,
+          entry_location_text: entryAddress,
+
+          exit_latitude: exitLat,
+          exit_longitude: exitLon,
+          exit_location_text: exitAddress,
+
+          shelf_photos: shelfRecords
+        };
+
+        const { error } = await supabaseClient
+          .from("daily_reports")
+          .insert([payload]);
+
+        if (error) throw error;
+
+        alert("اطلاعات با موفقیت ثبت شد.");
         location.reload();
-      } catch (err) { alert("خطا: " + err.message); btn.disabled = false; }
+
+      } catch (err) {
+        alert("خطا در ثبت اطلاعات: " + err.message);
+        btn.disabled = false;
+        btn.textContent = "ثبت نهایی";
+      }
     });
 
-    // سایر توابع
-    function startCam(t) { navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}).then(s=>{document.getElementById(`v_${t}`).srcObject=s;document.getElementById(`t_${t}`).disabled=false;document.getElementById(`s_${t}`).textContent="دوربین فعال است";});}
-    function resetCameraBox(t) { location.reload(); }
-    document.getElementById("supervisor").onchange = function() {
-        const s = document.getElementById("staff_name"); s.innerHTML = '<option value="">انتخاب کنید...</option>';
-        if(staffData[this.value]) { staffData[this.value].forEach(n => s.innerHTML += `<option value="${n}">${n}</option>`); s.disabled = false; }
-    };
-    function addShelfBox() {
-        const d = document.createElement("div"); d.className = "camera-box";
-        d.innerHTML = `عکس شلف <input type="file" accept="image/*">`;
-        document.getElementById("shelfContainer").appendChild(d);
-    }
+    document.getElementById("supervisor").addEventListener("change", function () {
+      const staffSelect = document.getElementById("staff_name");
+      staffSelect.innerHTML = `<option value="">انتخاب کنید...</option>`;
+
+      const list = staffData[this.value] || [];
+      list.forEach(name => {
+        const op = document.createElement("option");
+        op.value = name;
+        op.textContent = name;
+        staffSelect.appendChild(op);
+      });
+
+      staffSelect.disabled = list.length === 0;
+    });
   </script>
 </body>
 </html>
