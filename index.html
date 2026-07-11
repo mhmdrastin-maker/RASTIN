@@ -129,9 +129,9 @@
 
     function drawWatermark(canvas, lines) {
       const ctx = canvas.getContext("2d");
-      const fontSize = Math.max(16, Math.round(canvas.width * 0.018));
-      const lineGap = Math.round(fontSize * 0.45);
-      const padding = Math.round(fontSize * 0.6);
+      const fontSize = Math.max(12, Math.round(canvas.width * 0.014));
+      const lineGap = Math.round(fontSize * 0.3);
+      const padding = Math.round(fontSize * 0.45);
 
       ctx.save();
       ctx.font = `bold ${fontSize}px Tahoma, Arial, sans-serif`;
