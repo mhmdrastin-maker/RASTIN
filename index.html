@@ -583,13 +583,13 @@
 
       const btn = document.getElementById("submitBtn");
       const supervisor = document.getElementById("supervisor").value;
-      const customer_code = document.getElementById("customer_code").value;
+      const customercode = document.getElementById("customer_code").value;
       const staffName = document.getElementById("staff_name").value;
 
       const entryFile = document.getElementById("f_entry").files[0];
       const exitFile = document.getElementById("f_exit").files[0];
 
-      if (!supervisor || !customer_code || !staffName) {
+      if (!supervisor || !customercode || !staffName) {
         alert("لطفاً تمام فیلدهای اصلی را تکمیل کنید.");
         return;
       }
@@ -639,7 +639,7 @@
           longitude: exitLon,
           location_text: exitAddress,
 
-          };
+        };
 
         const { error } = await supabaseClient
           .from("daily_reports")
