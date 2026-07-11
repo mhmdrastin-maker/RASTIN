@@ -16,6 +16,7 @@
     input, select { width: 100%; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 12px 14px; font-size: 14px; }
     .camera-box { border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 12px; background: #f8fafc; text-align: center; margin-bottom: 10px; }
     video, img { width: 100%; border-radius: 12px; background: #000; display: block; }
+    canvas { display: none; } /* کانواس مخفی برای پردازش واترمارک */
     .photo-preview { display: none; margin-top: 10px; border: 2px solid #10b981; }
     .camera-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
     button { border: none; border-radius: 12px; padding: 12px; cursor: pointer; font-weight: 700; }
@@ -24,7 +25,7 @@
     .danger-btn { background: #fee2e2; color: #ef4444; }
     .submit-btn { width: 100%; background: #10b981; color: #fff; font-size: 16px; min-height: 52px; margin-top: 10px; }
     .status { margin-top: 8px; font-size: 13px; text-align: center; color: #64748b; }
-    .add-shelf-btn { width: 100%; background: #f1f5f9; color: #0f172a; border: 1.5px dashed #94a3b8; }
+    .add-shelf-btn { width: 100%; background: #f1f5f9; color: #0f172a; border: 1.5px dashed #94a3b8; margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -41,11 +42,13 @@
         </select>
       </div>
       <div class="field"><label>۲) کد فروشگاه</label><input type="number" id="shop_code" required></div>
-      <div class="field"><label>۳) نام نیرو</label><select id="staff_name" required disabled><option>ابتدا سرپرست را انتخاب کنید</option></select></div>
+      <div class="field"><label>۳) نام نیرو</label><select id="staff_name" required disabled><option value="">ابتدا سرپرست را انتخاب کنید</option></select></div>
       
+      <!-- عکس ورود -->
       <div class="field"><label>۴) عکس ورود</label>
         <div class="camera-box">
           <video id="v_entry" autoplay playsinline muted></video>
+          <canvas id="c_entry"></canvas>
           <img id="p_entry" class="photo-preview" />
           <div class="camera-actions">
             <button type="button" class="primary-btn" onclick="startCam('entry')">دوربین</button>
@@ -59,9 +62,11 @@
 
       <div class="field"><label>۵) عکس شلف</label><div id="shelfContainer"></div><button type="button" class="add-shelf-btn" onclick="addShelfBox()">+ افزودن شلف</button></div>
 
+      <!-- عکس خروج -->
       <div class="field"><label>۶) عکس خروج</label>
         <div class="camera-box">
           <video id="v_exit" autoplay playsinline muted></video>
+          <canvas id="c_exit"></canvas>
           <img id="p_exit" class="photo-preview" />
           <div class="camera-actions">
             <button type="button" class="primary-btn" onclick="startCam('exit')">دوربین</button>
@@ -72,7 +77,7 @@
           <input type="file" id="f_exit" hidden required />
         </div>
       </div>
-      <button type="submit" id="submitBtn" class="submit-btn">ثبت نهایی</button>
+      <button type="submit" id="submitBtn" class="submit-btn">ثبت نهایی در دیتابیس</button>
     </form>
   </div>
 
@@ -81,8 +86,7 @@
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsdmZmaGxmc3NoYmRjeHJjdmpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3NjM4NzUsImV4cCI6MjA5OTMzOTg3NX0.vbuRXTBcdUMLOTZ9p-aCTO30fbPbAYclzPe0oVmeeog"; 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
-    let exitLat = null, exitLon = null, exitAddress = "";
-    let entryTime = null, exitTime = null;
+    let exitLat = null, exitLon = null, exitAddress = "", entryTime = null, exitTime = null;
 
     const staffData = {
         "دنیا کرمی": ["الهام فاضلی", "امیر فرجی", "امیرحسین سلطان پناه", "رقیه عبدلرضائی زاده", "زینب فاضل زاده", "لیلا خانمحمدلو", "مریم سلیمانی", "مریم ترنیان"],
@@ -95,132 +99,144 @@
         "علی معصوم نژاد": ["پریسا بهمنش راد", "حدیثه حاتمی", "رها حاجیانی", "زهرا صفدری", "زهرا یسلیانی", "عاطفه دریس", "مریم محمدی", "مهسا امامی", "یلدا آورند"]
     };
 
+    // --- توابع کمکی واترمارک (دقیقا مطابق کدی که دادی) ---
+    function getPersianNow() {
+      const now = new Date();
+      const date = new Intl.DateTimeFormat("fa-IR-u-ca-persian-nu-latn", {year: "numeric", month: "2-digit", day: "2-digit"}).format(now);
+      const time = new Intl.DateTimeFormat("fa-IR-u-nu-latn", {hour: "2-digit", minute: "2-digit", hour12: false}).format(now);
+      return `${time} | ${date}`;
+    }
+
+    async function getLocationFull() {
+      try {
+        const pos = await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, {timeout: 10000}));
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        const gps = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+        
+        // ذخیره برای دیتابیس
+        exitLat = lat; exitLon = lon;
+
+        try {
+          const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=fa`);
+          const data = await resp.json();
+          const addr = data.display_name || "";
+          exitAddress = addr;
+          return addr ? `${addr} | ${gps}` : gps;
+        } catch { return gps; }
+      } catch { return "موقعیت یافت نشد"; }
+    }
+
+    function drawWatermark(canvas, lines) {
+      const ctx = canvas.getContext("2d");
+      const fontSize = Math.max(16, Math.round(canvas.width * 0.018));
+      const lineGap = Math.round(fontSize * 0.45);
+      const padding = Math.round(fontSize * 0.6);
+
+      ctx.save();
+      ctx.font = `bold ${fontSize}px Tahoma, Arial, sans-serif`;
+      ctx.direction = "rtl"; ctx.textAlign = "right"; ctx.textBaseline = "top";
+
+      const maxWidth = Math.max(...lines.map(l => ctx.measureText(l).width));
+      const rectWidth = maxWidth + (padding * 2);
+      const rectHeight = (fontSize * lines.length) + (lineGap * (lines.length - 1)) + (padding * 2);
+      
+      ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+      ctx.fillRect(canvas.width - 20 - rectWidth, canvas.height - 20 - rectHeight, rectWidth, rectHeight);
+
+      ctx.fillStyle = "#ffffff";
+      lines.forEach((line, i) => {
+        ctx.fillText(line, canvas.width - 20 - padding, canvas.height - 20 - rectHeight + padding + i * (fontSize + lineGap));
+      });
+      ctx.restore();
+    }
+
+    // --- منطق دوربین و ثبت ---
     async function takePhoto(type) {
+      const staff = document.getElementById("staff_name").value;
+      const code = document.getElementById("shop_code").value;
+      if(!staff || !code) return alert("ابتدا نام نیرو و کد فروشگاه را وارد کنید.");
+
       const video = document.getElementById(`v_${type}`);
-      const canvas = document.createElement('canvas');
+      const canvas = document.getElementById(`c_${type}`);
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      
-      // ۱. رسم عکس اصلی
+      const ctx = canvas.getContext("2d");
       ctx.drawImage(video, 0, 0);
 
-      // ۲. دریافت زمان و لوکیشن
-      const now = new Date();
-      const persianDate = new Intl.DateTimeFormat('fa-IR', { dateStyle: 'full', timeStyle: 'short' }).format(now);
+      document.getElementById(`s_${type}`).textContent = "در حال پردازش واترمارک و GPS...";
       
-      if (type === 'entry') entryTime = now.toISOString();
-      if (type === 'exit') {
-        exitTime = now.toISOString();
-        document.getElementById(`s_exit`).textContent = "در حال دریافت لوکیشن...";
-        await updateExitLocation(); 
-      }
+      const locText = (type === 'exit') ? await getLocationFull() : "لوکیشن ثبت نشد";
+      const typeLabel = (type === 'entry') ? "ورود" : "خروج";
+      const lines = [
+        `عکس ${typeLabel}: ${staff} | ${getPersianNow()} | کد:${code}`,
+        locText
+      ];
 
-      // ۳. افزودن واترمارک
-      const barHeight = canvas.height * 0.12;
-      ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-      ctx.fillRect(0, canvas.height - barHeight, canvas.width, barHeight);
-      
-      ctx.fillStyle = "white";
-      ctx.font = `${Math.floor(canvas.height * 0.035)}px Vazirmatn, sans-serif`;
-      ctx.textAlign = "right";
-      
-      let textY = canvas.height - (barHeight / 2) + 5;
-      ctx.fillText(persianDate, canvas.width - 20, textY);
-      
-      if (type === 'exit' && exitAddress) {
-          ctx.font = `${Math.floor(canvas.height * 0.025)}px Vazirmatn, sans-serif`;
-          ctx.fillText(exitAddress.substring(0, 60) + "...", canvas.width - 20, textY + 25);
-      }
+      drawWatermark(canvas, lines);
 
-      // ۴. تبدیل به فایل
       canvas.toBlob(blob => {
         const file = new File([blob], `${type}.jpg`, { type: "image/jpeg" });
         const dt = new DataTransfer(); dt.items.add(file);
         document.getElementById(`f_${type}`).files = dt.files;
         
-        const preview = document.getElementById(`p_${type}`);
-        preview.src = URL.createObjectURL(blob);
-        preview.style.display = "block";
+        document.getElementById(`p_${type}`).src = URL.createObjectURL(blob);
+        document.getElementById(`p_${type}`).style.display = "block";
         video.style.display = "none";
         document.getElementById(`t_${type}`).disabled = true;
         document.getElementById(`r_${type}`).disabled = false;
-        document.getElementById(`s_${type}`).textContent = "عکس با واترمارک ثبت شد";
+        document.getElementById(`s_${type}`).textContent = "عکس با واترمارک ثبت شد.";
+        
+        if(type === 'entry') entryTime = new Date().toISOString();
+        if(type === 'exit') exitTime = new Date().toISOString();
       }, "image/jpeg", 0.9);
     }
 
-    async function updateExitLocation() {
-        try {
-            const pos = await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej, {timeout: 10000}));
-            exitLat = pos.coords.latitude;
-            exitLon = pos.coords.longitude;
-            const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${exitLat}&lon=${exitLon}&accept-language=fa`);
-            const data = await resp.json();
-            exitAddress = data.display_name || "آدرس یافت نشد";
-        } catch(e) { 
-            exitAddress = "خطا در دریافت موقعیت";
-            console.error(e); 
-        }
-    }
-
-    document.getElementById("mainForm").addEventListener("submit", async event => {
-      event.preventDefault();
-      const submitBtn = document.getElementById("submitBtn");
-      submitBtn.disabled = true;
-      submitBtn.textContent = "در حال ارسال...";
+    // --- ثبت نهایی در Supabase ---
+    document.getElementById("mainForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const btn = document.getElementById("submitBtn");
+      btn.disabled = true; btn.textContent = "در حال ارسال به Supabase...";
 
       try {
-        const entryFile = document.getElementById("f_entry").files[0];
-        const exitFile = document.getElementById("f_exit").files[0];
-
         const upload = async (file, folder) => {
-            const path = `${folder}/${Date.now()}.jpg`;
-            await supabaseClient.storage.from("Raptor").upload(path, file);
-            return supabaseClient.storage.from("Raptor").getPublicUrl(path).data.publicUrl;
+          const path = `${folder}/${Date.now()}.jpg`;
+          await supabaseClient.storage.from("Raptor").upload(path, file);
+          return supabaseClient.storage.from("Raptor").getPublicUrl(path).data.publicUrl;
         };
 
-        const [entryUrl, exitUrl] = await Promise.all([upload(entryFile, "entry"), upload(exitFile, "exit")]);
+        const entryUrl = await upload(document.getElementById("f_entry").files[0], "entry");
+        const exitUrl = await upload(document.getElementById("f_exit").files[0], "exit");
 
         await supabaseClient.from("daily_reports").insert([{
-            supervisor: document.getElementById("supervisor").value,
-            shop_code: document.getElementById("shop_code").value,
-            staff_name: document.getElementById("staff_name").value,
-            entry_photo_url: entryUrl,
-            exit_photo_url: exitUrl,
-            latitude: exitLat,
-            longitude: exitLon,
-            location_text: exitAddress,
-            entry_time: entryTime,
-            exit_time: exitTime
+          supervisor: document.getElementById("supervisor").value,
+          shop_code: document.getElementById("shop_code").value,
+          staff_name: document.getElementById("staff_name").value,
+          entry_photo_url: entryUrl,
+          exit_photo_url: exitUrl,
+          latitude: exitLat,
+          longitude: exitLon,
+          location_text: exitAddress,
+          entry_time: entryTime,
+          exit_time: exitTime
         }]);
 
-        alert("ثبت با موفقیت انجام شد.");
+        alert("اطلاعات با موفقیت در دیتابیس ثبت شد.");
         location.reload();
-      } catch (err) { alert("خطا: " + err.message); submitBtn.disabled = false; }
+      } catch (err) { alert("خطا: " + err.message); btn.disabled = false; }
     });
 
-    function startCam(type) { 
-        navigator.mediaDevices.getUserMedia({video: {facingMode: "environment"}})
-        .then(s => { 
-            document.getElementById(`v_${type}`).srcObject = s; 
-            document.getElementById(`t_${type}`).disabled = false;
-            document.getElementById(`s_${type}`).textContent = "دوربین فعال است";
-        }); 
-    }
-    function resetCameraBox(type) { location.reload(); }
+    // سایر توابع
+    function startCam(t) { navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}).then(s=>{document.getElementById(`v_${t}`).srcObject=s;document.getElementById(`t_${t}`).disabled=false;document.getElementById(`s_${t}`).textContent="دوربین فعال است";});}
+    function resetCameraBox(t) { location.reload(); }
     document.getElementById("supervisor").onchange = function() {
-        const sel = document.getElementById("staff_name");
-        sel.innerHTML = '<option value="">انتخاب کنید...</option>';
-        if(staffData[this.value]) {
-            staffData[this.value].forEach(n => sel.innerHTML += `<option value="${n}">${n}</option>`);
-            sel.disabled = false;
-        }
+        const s = document.getElementById("staff_name"); s.innerHTML = '<option value="">انتخاب کنید...</option>';
+        if(staffData[this.value]) { staffData[this.value].forEach(n => s.innerHTML += `<option value="${n}">${n}</option>`); s.disabled = false; }
     };
     function addShelfBox() {
-        const div = document.createElement("div");
-        div.className = "camera-box";
-        div.innerHTML = `عکس شلف جدید <input type="file" class="shelf-file" accept="image/*">`;
-        document.getElementById("shelfContainer").appendChild(div);
+        const d = document.createElement("div"); d.className = "camera-box";
+        d.innerHTML = `عکس شلف <input type="file" accept="image/*">`;
+        document.getElementById("shelfContainer").appendChild(d);
     }
   </script>
 </body>
