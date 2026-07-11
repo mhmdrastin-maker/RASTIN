@@ -454,18 +454,18 @@
         status.textContent = "عکس با موفقیت ثبت شد.";
 
         if (type === "entry") {
-          entryTime = new Date().toISOString();
+          entryTime = getPersianNow();
           entryLat = loc.lat;
           entryLon = loc.lon;
           entryAddress = loc.address;
         } else if (type === "exit") {
-          exitTime = new Date().toISOString();
+          exitTime = getPersianNow();
           exitLat = loc.lat;
           exitLon = loc.lon;
           exitAddress = loc.address;
         } else if (type.startsWith("shelf_")) {
           shelfMeta[type] = {
-            time: new Date().toISOString(),
+            time: getPersianNow(),
             lat: loc.lat,
             lon: loc.lon,
             address: loc.address
@@ -639,6 +639,7 @@
           longitude: exitLon,
           location_text: exitAddress,
 
+          shelf_photos: shelfRecords
         };
 
         const { error } = await supabaseClient
