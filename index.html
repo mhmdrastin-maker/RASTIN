@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>فرم ثبت سرکشی سرپرستان مویرگی</title>
+  <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; font-family: Vazirmatn, sans-serif; }
+    body { margin: 0; padding: 16px; background: #f1f5f9; color: #0f172a; }
+    .card { max-width: 720px; margin: 0 auto; background: #fff; border-radius: 18px; padding: 20px; box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08); }
+    h2 { margin: 0 0 20px; text-align: center; font-size: 22px; color: #1e293b; }
+    .field { margin-bottom: 18px; }
+    label { display: block; margin-bottom: 8px; font-weight: 700; color: #334155; font-size: 14px; }
+    input, select { width: 100%; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 12px 14px; font-size: 14px; }
+    .camera-box { border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 12px; background: #f8fafc; text-align: center; margin-bottom: 10px; }
+    video, img { width: 100%; border-radius: 12px; background: #000; display: block; }
+    .photo-preview { display: none; margin-top: 10px; border: 2px solid #10b981; }
+    .camera-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+    button { border: none; border-radius: 12px; padding: 12px; cursor: pointer; font-weight: 700; }
+    .primary-btn { background: #2563eb; color: #fff; }
+    .secondary-btn { background: #e2e8f0; color: #334155; }
+    .danger-btn { background: #fee2e2; color: #ef4444; }
+    .submit-btn { width: 100%; background: #10b981; color: #fff; font-size: 16px; min-height: 52px; margin-top: 10px; }
+    .status { margin-top: 8px; font-size: 13px; text-align: center; color: #64748b; }
+    .add-shelf-btn { width: 100%; background: #f1f5f9; color: #0f172a; border: 1.5px dashed #94a3b8; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>فرم ثبت سرکشی</h2>
+    <form id="mainForm">
+      <div class="field">
+        <label>۱) نام سرپرست</label>
+        <select id="supervisor" required><option value="">انتخاب کنید...</option>
+          <option value="دنیا کرمی">دنیا کرمی</option><option value="مائده بهشتی">مائده بهشتی</option>
+          <option value="محمد شیرمحمدیان">محمد شیرمحمدیان</option><option value="محمد رضایی زنده دل">محمد رضایی زنده دل</option>
+          <option value="مهسا کلیدری">مهسا کلیدری</option><option value="ندا دهزاده">ندا دهزاده</option>
+          <option value="نگار شهمراد">نگار شهمراد</option><option value="علی معصوم نژاد">علی معصوم نژاد</option>
+        </select>
+      </div>
+      <div class="field"><label>۲) کد فروشگاه</label><input type="number" id="shop_code" required></div>
+      <div class="field"><label>۳) نام نیرو</label><select id="staff_name" required disabled><option>ابتدا سرپرست را انتخاب کنید</option></select></div>
+      
+      <!-- عکس ورود -->
+      <div class="field"><label>۴) عکس ورود</label>
+        <div class="camera-box">
+          <video id="v_entry" autoplay playsinline muted></video>
+          <img id="p_entry" class="photo-preview" />
+          <div class="camera-actions">
+            <button type="button" class="primary-btn" onclick="startCam('entry')">دوربین</button>
+            <button type="button" id="t_entry" class="secondary-btn" onclick="takePhoto('entry')" disabled>ثبت</button>
+            <button type="button" id="r_entry" class="danger-btn" onclick="resetCameraBox('entry')" disabled>حذف</button>
+          </div>
+          <div id="s_entry" class="status">دوربین خاموش</div>
+          <input type="file" id="f_entry" hidden required />
+        </div>
+      </div>
+
+      <div class="field"><label>۵) عکس شلف</label><div id="shelfContainer"></div><button type="button" class="add-shelf-btn" onclick="addShelfBox()">+ افزودن شلف</button></div>
+
+      <!-- عکس خروج -->
+      <div class="field"><label>۶) عکس خروج</label>
+        <div class="camera-box">
+          <video id="v_exit" autoplay playsinline muted></video>
+          <img id="p_exit" class="photo-preview" />
+          <div class="camera-actions">
+            <button type="button" class="primary-btn" onclick="startCam('exit')">دوربین</button>
+            <button type="button" id="t_exit" class="secondary-btn" onclick="takePhoto('exit')" disabled>ثبت</button>
+            <button type="button" id="r_exit" class="danger-btn" onclick="resetCameraBox('exit')" disabled>حذف</button>
+          </div>
+          <div id="s_exit" class="status">دوربین خاموش</div>
+          <input type="file" id="f_exit" hidden required />
+        </div>
+      </div>
+      <button type="submit" id="submitBtn" class="submit-btn">ثبت نهایی</button>
+    </form>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://jlvffhlfsshbdcxrcvjl.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsdmZmaGxmc3NoYmRjeHJjdmpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3NjM4NzUsImV4cCI6MjA5OTMzOTg3NX0.vbuRXTBcdUMLOTZ9p-aCTO30fbPbAYclzPe0oVmeeog"; 
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // متغیرهای لوکیشن و زمان
+    let exitLat = null, exitLon = null, exitAddress = "";
+    let entryTime = null, exitTime = null;
+
+    const staffData = {
+        "دنیا کرمی": ["الهام فاضلی", "امیر فرجی", "امیرحسین سلطان پناه", "رقیه عبدلرضائی زاده", "زینب فاضل زاده", "لیلا خانمحمدلو", "مریم سلیمانی", "مریم ترنیان"],
+        "مائده بهشتی": ["رویا حاجیوند", "زهرا خلخالی", "شهلا جوانمردنیا", "ظریفه رائی", "فاطمه الله وردی", "معصومه شورابی", "معصومه مرادی"],
+        "محمد شیرمحمدیان": ["امیر عبدی", "سوده سروقدی", "محمد غیبی", "مریم هفتانی"],
+        "محمد رضایی زنده دل": ["فاطمه عزیزی", "فاطمه نوری", "فائزه رهنما دلچه", "مائده شعبان زاده", "مریم رستمی کرکرق", "نعیمه فرشاد"],
+        "مهسا کلیدری": ["الهام اسدپور", "الهام عسکری", "بهاره اولیایی", "ثریا دهقانی", "حمیده صدیقی", "خدیجه تیموری", "زینب دهقانی", "سمیه ارغوانی", "سهیلا توسلی", "فاطمه رمضانی", "فاطمه غفوریان", "کعبه صفری پور", "ملیحه عباسی", "هانیه رحیمی"],
+        "ندا دهزاده": ["زهرا خاکزاد", "سارا مهدی زاده", "سحر جعفری", "سمانه احمدی", "فاطمه اندراجمی ساداتی", "مرجان کونوشیان", "مریم سادات حسینی", "مهدیه قاسمی", "مهسا فیض آبادی", "مینا امیری"],
+        "نگار شهمراد": ["پریسا بهمنش راد", "حدیثه حاتمی", "رها حاجیانی", "زهرا صفدری", "زهرا یسلیانی", "عاطفه دریس", "مریم محمدی", "مهسا امامی", "یلدا آورند"],
+        "علی معصوم نژاد": ["پریسا بهمنش راد", "حدیثه حاتمی", "رها حاجیانی", "زهرا صفدری", "زهرا یسلیانی", "عاطفه دریس", "مریم محمدی", "مهسا امامی", "یلدا آورند"]
+    };
+
+    // منطق دوربین و لوکیشن
+    async function takePhoto(type) {
+      if (type === 'entry') entryTime = new Date().toISOString();
+      if (type === 'exit') {
+        exitTime = new Date().toISOString();
+        await updateExitLocation(); // دریافت لوکیشن فقط برای خروج
+      }
+      
+      const video = document.getElementById(`v_${type}`);
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      
+      canvas.toBlob(blob => {
+        const file = new File([blob], `${type}.jpg`, { type: "image/jpeg" });
+        const dt = new DataTransfer(); dt.items.add(file);
+        document.getElementById(`f_${type}`).files = dt.files;
+        
+        const preview = document.getElementById(`p_${type}`);
+        preview.src = URL.createObjectURL(blob);
+        preview.style.display = "block";
+        video.style.display = "none";
+        document.getElementById(`t_${type}`).disabled = true;
+        document.getElementById(`r_${type}`).disabled = false;
+      }, "image/jpeg", 0.9);
+    }
+
+    async function updateExitLocation() {
+        try {
+            const pos = await new Promise((res, rej) => navigator.geolocation.getCurrentPosition(res, rej));
+            exitLat = pos.coords.latitude;
+            exitLon = pos.coords.longitude;
+            const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${exitLat}&lon=${exitLon}&accept-language=fa`);
+            const data = await resp.json();
+            exitAddress = data.display_name || "نامشخص";
+        } catch(e) { console.error("GPS Error", e); }
+    }
+
+    // منطق ثبت
+    document.getElementById("mainForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      const submitBtn = document.getElementById("submitBtn");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "در حال ارسال...";
+
+      try {
+        const entryFile = document.getElementById("f_entry").files[0];
+        const exitFile = document.getElementById("f_exit").files[0];
+
+        const upload = async (file, folder) => {
+            const path = `${folder}/${Date.now()}.jpg`;
+            await supabaseClient.storage.from("Raptor").upload(path, file);
+            return supabaseClient.storage.from("Raptor").getPublicUrl(path).data.publicUrl;
+        };
+
+        const [entryUrl, exitUrl] = await Promise.all([upload(entryFile, "entry"), upload(exitFile, "exit")]);
+
+        await supabaseClient.from("daily_reports").insert([{
+            supervisor: document.getElementById("supervisor").value,
+            shop_code: document.getElementById("shop_code").value,
+            staff_name: document.getElementById("staff_name").value,
+            entry_photo_url: entryUrl,
+            exit_photo_url: exitUrl,
+            latitude: exitLat,
+            longitude: exitLon,
+            location_text: exitAddress,
+            entry_time: entryTime,
+            exit_time: exitTime
+        }]);
+
+        alert("ثبت با موفقیت انجام شد.");
+        location.reload();
+      } catch (err) { alert("خطا: " + err.message); submitBtn.disabled = false; }
+    });
+
+    // Helper functions
+    function startCam(type) { navigator.mediaDevices.getUserMedia({video: {facingMode: "environment"}}).then(s => { document.getElementById(`v_${type}`).srcObject = s; document.getElementById(`t_${type}`).disabled = false; }); }
+    function resetCameraBox(type) { location.reload(); }
+    document.getElementById("supervisor").onchange = function() {
+        const sel = document.getElementById("staff_name");
+        sel.innerHTML = '<option>انتخاب کنید...</option>';
+        staffData[this.value].forEach(n => sel.innerHTML += `<option>${n}</option>`);
+        sel.disabled = false;
+    };
+    function addShelfBox() {
+        const div = document.createElement("div");
+        div.className = "camera-box";
+        div.innerHTML = `عکس شلف جدید <input type="file" class="shelf-file">`;
+        document.getElementById("shelfContainer").appendChild(div);
+    }
+  </script>
+</body>
+</html>
